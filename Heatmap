@@ -4,7 +4,9 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from datetime import datetime
-data = pd.read_csv('C:/Users/Acer/Desktop/HW/coding/Project/rainfall1.csv')
+data = pd.read_csv('C:/Users/Acer/Desktop/HW/coding/Project/rainfall3.csv') 
+#We have 3 file, rainfall 3 is every cities. 
+#Then, after clean data we separate rainfall3 to rainfall 1 = 33 cities and rainfall2 = 32 city
 data.info()
 ###Missing Value###
 data.isnull().sum().sort_values(ascending = False)
@@ -12,5 +14,19 @@ data.isnull().sum().sort_values(ascending = False)
 data.isnull().values.sum()
 #drop out Phangnga because it's don't have data
 data = data.drop(columns="Phangnga")
-#Missing value 25 data so We use average in each city. Then, fill in blank data with average.
+#Missing value 15 data so We use average in each city. Then, fill in blank data with average.
 #We look at average number it's make sense because mean number is near by year before and after the blank data
+data=data.fillna(data.mean())
+#set city as index
+frame1 = data.set_index(['city'])
+frame1
+##Heatmap##
+sns.set(font_scale=1.5)
+plt.figure(figsize=(25,25))
+cmap = sns.diverging_palette(h_neg=0, h_pos=220, as_cmap=True) # hue
+sns.heatmap(frame3,
+            center=0,#annot=True, fmt=',.0f',
+            #######annot=True, fmt=',.0f' is the term of show number data, if want to show data just put # out #######
+            linewidths=.5,
+            cmap=cmap)
+plt.title('#Rainfall(millimeter)');
