@@ -1,0 +1,16 @@
+######### HEATMAP ###############
+import numpy as np 
+import pandas as pd 
+import seaborn as sns
+import matplotlib.pyplot as plt
+from datetime import datetime
+data = pd.read_csv('C:/Users/Acer/Desktop/HW/coding/Project/rainfall1.csv')
+data.info()
+###Missing Value###
+data.isnull().sum().sort_values(ascending = False)
+#Number of missing value
+data.isnull().values.sum()
+#drop out Phangnga because it's don't have data
+data = data.drop(columns="Phangnga")
+#Missing value 25 data so We use average in each city. Then, fill in blank data with average.
+#We look at average number it's make sense because mean number is near by year before and after the blank data
