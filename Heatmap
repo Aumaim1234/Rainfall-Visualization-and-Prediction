@@ -14,7 +14,7 @@ data.isnull().sum().sort_values(ascending = False)
 data.isnull().values.sum()
 #drop out Phangnga because it's don't have data
 data = data.drop(columns="Phangnga")
-#Missing value 25 data so We use average in each city. Then, fill in blank data with average.
+#Missing value 15 data so We use average in each city. Then, fill in blank data with average.
 #We look at average number it's make sense because mean number is near by year before and after the blank data
 data=data.fillna(data.mean())
 #set city as index
