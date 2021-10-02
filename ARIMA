@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import pandas as pd
+import math
 import statsmodels.formula.api as smf
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
@@ -15,6 +16,7 @@ from sklearn.metrics import mean_squared_error
 df = pd.read_csv('/content/sample_data/rainfall2-transpost.csv')
 print('Shape of data',df.shape)
 df=df.set_index(['Year'])
+df.dropna(axis='columns',inplace=True)
 
 from statsmodels.tsa.stattools import acf, pacf
 thAcf = acf(df['Ubon Ratchathani'], nlags=4)
@@ -31,37 +33,44 @@ def adf_test(df):
      print("5. Critical Values :")
      for key, val in dftest[4].items():
          print("\t",key, ": ", val)
+         return dftest[1]
+         
+#find province index from condition  
+# p <0.05; data stationary
+# p> 0.05; data non-stationary
 province=list()
 for i in range(len(df.columns)):
   P=adf_test(df.iloc[:,i])
   if P<0.05:
     province.append(i)
 print(province)   
-# p <0.05; data stationary
-# p> 0.05; data non-stationary
 
-#find province index which best arima not (0,0,0)
+#look for province index which best arima not (0,0,0)
 from pmdarima import auto_arima
 for i in province:
   stepwise_fit = auto_arima(df.iloc[:,i], trace=True,
   suppress_warnings=True)
   print(i)
 
+pip install pmdarima
+import warnings 
+warnings.filterwarnings('ignore')
+
 #print index to see their province
 print(df.iloc[:,21])
 print(df.iloc[:,53])
-print(df.iloc[:,55])  
+print(df.iloc[:,55])   
 
 from statsmodels.tsa.arima_model import ARIMA
 import numpy as np
 
-#ARIMA 2 0 0
+#ARIMA best
 model = ARIMA(df.Satun, order=(2,0,0))
 model_fit = model.fit(disp=0)
 model_fit.plot_predict(dynamic=False)
 plt.show()
 
-#ARIMA 1 0 0
+#ARIMA not best
 model1 = ARIMA(df.Satun, order=(1,0,0))
 model_fit1 = model1.fit(disp=0)
 print(model_fit1.summary())
@@ -90,7 +99,6 @@ for i in range(len(x_test)):
   test_obs = x_test[i]
   history.append(test_obs)
   print('>Predicted=%.3f, Expected=%3.f' % (y_pred, test_obs))
-  import math
   
 # report performance
 rmse = math.sqrt(mean_squared_error(x_test, predictions))
@@ -123,7 +131,12 @@ for i in range(len(x_test)):
 rmse = math.sqrt(mean_squared_error(x_test, predictions))
 print('RMSE: %.3f' % rmse) 
 
-#plot fprecasted
+#Graph plot with detail info
+#fix label name in the graph
+history=pd.DataFrame(history[0:9],columns=['Satun'])
+model = ARIMA(history, order=(2,0,0))
+model_fit = model.fit(disp=0)
+
 forecasts,SE,Interval=model_fit.forecast(steps=3,alpha=0.05)
 model_fit.plot_predict(0,12, alpha=0.05,plot_insample=True)
 x = model_fit.forecast(steps=3)
