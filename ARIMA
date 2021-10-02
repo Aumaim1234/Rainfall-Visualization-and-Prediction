@@ -16,6 +16,7 @@ from sklearn.metrics import mean_squared_error
 df = pd.read_csv('/content/sample_data/rainfall2-transpost.csv')
 print('Shape of data',df.shape)
 df=df.set_index(['Year'])
+df.dropna(axis='columns',inplace=True)
 
 from statsmodels.tsa.stattools import acf, pacf
 thAcf = acf(df['Ubon Ratchathani'], nlags=4)
