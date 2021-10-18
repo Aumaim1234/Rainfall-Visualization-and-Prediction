@@ -8,22 +8,20 @@ import math
 import statsmodels.formula.api as smf
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
+from pmdarima import auto_arima
 from datetime import datetime
 from statsmodels.tsa.stattools import adfuller
 from sklearn.metrics import mean_squared_error
+from statsmodels.tsa.arima_model import ARIMA
+from statsmodels.tsa.stattools import acf, pacf
 
 #add data file
-df = pd.read_csv('/content/sample_data/rainfall2-transpost.csv')
+df = pd.read_csv('F:/Materials/data sci/270702/project/rainfall2-transpost.csv')
 print('Shape of data',df.shape)
 df=df.set_index(['Year'])
 df.dropna(axis='columns',inplace=True)
 
-from statsmodels.tsa.stattools import acf, pacf
-thAcf = acf(df['Ubon Ratchathani'], nlags=4)
-thPacf = pacf(df['Ubon Ratchathani'], nlags=4, method='ols')
-
 #stationary test#
-from statsmodels.tsa.stattools import adfuller
 def adf_test(df):
      dftest = adfuller(df, autolag = 'AIC')
      print("1. ADF : ",dftest[0])
@@ -46,12 +44,12 @@ for i in range(len(df.columns)):
 print(province)   
 
 #look for province index which best arima not (0,0,0)
-from pmdarima import auto_arima
 for i in province:
   stepwise_fit = auto_arima(df.iloc[:,i], trace=True,
   suppress_warnings=True)
   print(i)
 
+#####install pmdarima part
 pip install pmdarima
 import warnings 
 warnings.filterwarnings('ignore')
@@ -61,24 +59,30 @@ print(df.iloc[:,21])
 print(df.iloc[:,53])
 print(df.iloc[:,55])   
 
-from statsmodels.tsa.arima_model import ARIMA
-import numpy as np
+#####you can choose the interrested province
+Input_your_interrested_Province=input(str(print('Please input province here:')))
+m=input((print('Input ARIMA number: ')))
+m=int(m)
+
+thAcf = acf(df[Input_your_interrested_Province], nlags=4)
+thPacf = pacf(df[Input_your_interrested_Province], nlags=4, method='ols')
 
 #ARIMA best
-model = ARIMA(df.Satun, order=(2,0,0))
+model = ARIMA(df[Input_your_interrested_Province], order=(2,0,0))
 model_fit = model.fit(disp=0)
 model_fit.plot_predict(dynamic=False)
 plt.show()
 
 #ARIMA not best
-model1 = ARIMA(df.Satun, order=(1,0,0))
+model1 = ARIMA(df[Input_your_interrested_Province], order=(1,0,0))
 model_fit1 = model1.fit(disp=0)
 print(model_fit1.summary())
 model_fit1.plot_predict(dynamic=False)
 plt.show()
 
+########check arima not best
 ###RSME ARIMA not best
-train_series=df["Satun"].values
+train_series=df[Input_your_interrested_Province].values
 train_size = int(len(train_series) * 0.7)
 x_train, x_test = train_series[0:train_size], train_series[train_size:]
 print('Train Set Lenght:',len(x_train))
@@ -87,7 +91,6 @@ print('Test Set Lenght:',len(x_test))
 history = [i for i in x_train]
 predictions = list()
 
-#check arima not best
 for i in range(len(x_test)):
   # predict
   model = ARIMA(history, order=(1,0,0))
@@ -104,9 +107,9 @@ for i in range(len(x_test)):
 rmse = math.sqrt(mean_squared_error(x_test, predictions))
 print('RMSE: %.3f' % rmse)
   
-#check arima best
+#########check arima best
 ###RSME ARIMA best
-train_series=df["Satun"].values
+train_series=df[Input_your_interrested_Province].values
 train_size = int(len(train_series) * 0.7)
 x_train, x_test = train_series[0:train_size], train_series[train_size:]
 print('Train Set Lenght:',len(x_train))
@@ -131,11 +134,11 @@ for i in range(len(x_test)):
 rmse = math.sqrt(mean_squared_error(x_test, predictions))
 print('RMSE: %.3f' % rmse) 
 
-#Graph plot with detail info
+########Graph plot with detail info
 #fix label name in the graph
-history=pd.DataFrame(history[0:9],columns=['Satun'])
-model = ARIMA(history, order=(2,0,0))
-model_fit = model.fit(disp=0)
+history=pd.DataFrame(history[0:10],columns=[Input_your_interrested_Province])
+model = ARIMA(history, order=(m,0,0))
+model_fit1 = model.fit(disp=0)
 
 forecasts,SE,Interval=model_fit1.forecast(steps=3,alpha=0.05)
 model_fit1.plot_predict(0,12, alpha=0.05,plot_insample=True)
